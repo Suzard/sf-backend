@@ -16,6 +16,8 @@ def test_create_contact(client, payload):
     assert body["id"] > 0
     assert body["email"] == "ada@example.com"
     assert body["full_name"] == "Ada Lovelace"
+    assert len(body["addresses"]) == 1
+    assert body["addresses"][0]["type"] == "Home"
     assert body["created_at"] and body["updated_at"]
 
 
@@ -99,6 +101,29 @@ def test_patch_updates_only_sent_fields(client, payload):
     assert body["phone"] == "+1-000-000-0000"
     assert body["first_name"] == "Ada"
     assert body["company"] == "Analytical Engines"
+    assert len(body["addresses"]) == 1
+    assert body["addresses"][0]["type"] == "Home"
+
+
+def test_patch_addresses_replaces_list(client, payload):
+    contact_id = client.post(BASE, json=payload).json()["id"]
+    response = client.patch(
+        f"{BASE}/{contact_id}",
+        json={"addresses": [{"type": "Work", "city": "Oakland", "country": "USA"}]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["addresses"] == [
+        {
+            "id": body["addresses"][0]["id"],
+            "type": "Work",
+            "address": None,
+            "city": "Oakland",
+            "state": None,
+            "postal_code": None,
+            "country": "USA",
+        }
+    ]
 
 
 def test_patch_duplicate_email_conflicts(client, payload):
@@ -124,6 +149,7 @@ def test_put_replaces_contact(client, payload):
     body = response.json()
     assert body["full_name"] == "Grace Hopper"
     assert body["company"] is None  # omitted fields are cleared by PUT
+    assert body["addresses"] == []
 
 
 def test_put_missing_contact_returns_404(client):
