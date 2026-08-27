@@ -49,9 +49,10 @@ through the UI lives only until the process exits.
 ### Reading the schemas
 
 Both UIs list every model under **Schemas** (ReDoc) or **Schemas** at the bottom of the
-page (Swagger UI). `ContactCreate`, `ContactReplace` (PUT), `ContactUpdate` (PATCH),
-`ContactRead`, and `ContactPage` show exactly which fields are required, which are
-nullable, and the validation rules — the same constraints described in
+page (Swagger UI). `AddressCreate`, `AddressRead`, `ContactCreate`,
+`ContactReplace` (PUT), `ContactUpdate` (PATCH), `ContactRead`, and `ContactPage`
+show exactly which fields are required, which are nullable, and the validation
+rules — the same constraints described in
 [Contact fields](#contact-fields) below. Endpoints are grouped
 by the tags declared in `app/main.py`, and each documents its error responses (`404`,
 `409`, `422`) with example payloads.
@@ -108,7 +109,13 @@ also read):
 
 ```
 first_name, last_name, email, phone, company, job_title,
-address, city, state, postal_code, country, notes
+notes
+```
+
+Each contact can also have zero or more `addresses`, where each address has:
+
+```
+type (Home|Work|Other), address, city, state, postal_code, country
 ```
 
 Responses add `id`, `full_name`, `created_at`, and `updated_at` (UTC).
@@ -132,7 +139,7 @@ List responses are wrapped so clients can paginate:
 ### Status codes
 
 `201` created · `204` deleted · `404` unknown id · `409` duplicate email ·
-`422` validation error (bad email, blank name, invalid `sort_by`)
+`422` validation error (bad email, blank name, invalid `sort_by`, invalid address `type`)
 
 ## Examples
 
@@ -141,14 +148,16 @@ List responses are wrapped so clients can paginate:
 curl -X POST http://127.0.0.1:8000/api/v1/contacts \
   -H 'content-type: application/json' \
   -d '{"first_name":"Katherine","last_name":"Johnson","email":"katherine@example.com",
-       "phone":"+1-757-555-0199","company":"NASA","job_title":"Mathematician"}'
+       "phone":"+1-757-555-0199","company":"NASA","job_title":"Mathematician",
+       "addresses":[{"type":"Work","city":"Hampton","state":"VA","country":"USA"}]}'
 
 # Search + paginate
 curl "http://127.0.0.1:8000/api/v1/contacts?search=nasa&limit=10&sort_by=last_name"
 
 # Partial update
 curl -X PATCH http://127.0.0.1:8000/api/v1/contacts/1 \
-  -H 'content-type: application/json' -d '{"phone":"+1-415-555-0000"}'
+  -H 'content-type: application/json' -d '{"phone":"+1-415-555-0000",
+       "addresses":[{"type":"Home","city":"San Francisco","country":"USA"}]}'
 
 # Delete
 curl -X DELETE http://127.0.0.1:8000/api/v1/contacts/1
