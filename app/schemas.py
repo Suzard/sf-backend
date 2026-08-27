@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, HttpUrl, computed_field, field_validator
 
 
 class AddressType(str, Enum):
@@ -92,6 +92,15 @@ class ContactBase(BaseModel):
         description="Role held at the company.",
         examples=["Mathematician"],
     )
+    photo_url: HttpUrl | None = Field(
+        default=None,
+        max_length=2048,
+        description=(
+            "Public HTTP(S) URL of the contact's profile photo. When null, clients "
+            "should display the contact's initials instead."
+        ),
+        examples=["https://images.example.com/contacts/ada-lovelace.jpg"],
+    )
     addresses: list[AddressCreate] = Field(
         default_factory=list,
         description="Addresses attached to the contact. A contact can have zero or more.",
@@ -110,6 +119,7 @@ _FULL_EXAMPLE = {
     "phone": "+1-415-555-0101",
     "company": "Analytical Engines",
     "job_title": "Mathematician",
+    "photo_url": "https://images.example.com/contacts/ada-lovelace.jpg",
     "addresses": [
         {
             "type": "Home",
@@ -173,6 +183,11 @@ class ContactUpdate(BaseModel):
     phone: str | None = Field(default=None, max_length=40, description="New phone number.")
     company: str | None = Field(default=None, max_length=200, description="New company.")
     job_title: str | None = Field(default=None, max_length=200, description="New job title.")
+    photo_url: HttpUrl | None = Field(
+        default=None,
+        max_length=2048,
+        description="New profile photo URL; send null to restore the initials fallback.",
+    )
     addresses: list[AddressCreate] | None = Field(
         default=None,
         description="Replacement address list. Omit to leave addresses unchanged.",

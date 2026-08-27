@@ -133,6 +133,8 @@ def test_contact_fields_are_described_and_have_examples(spec):
     assert schema["properties"]["email"]["examples"] == ["ada@example.com"]
     assert schema["properties"]["full_name"]["description"]
     assert schema["properties"]["addresses"]["type"] == "array"
+    photo_variants = schema["properties"]["photo_url"]["anyOf"]
+    assert {variant.get("format") for variant in photo_variants} == {"uri", None}
 
 
 def test_address_type_enum_is_documented(spec):

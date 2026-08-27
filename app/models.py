@@ -48,6 +48,7 @@ class Contact(Base):
 
     company: Mapped[str | None] = mapped_column(String(200))
     job_title: Mapped[str | None] = mapped_column(String(200))
+    photo_url: Mapped[str | None] = mapped_column(String(2048))
 
     notes: Mapped[str | None] = mapped_column(Text)
 
