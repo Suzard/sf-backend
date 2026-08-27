@@ -11,6 +11,8 @@ uv venv && uv pip install -e ".[dev]"     # or: python -m venv .venv && pip inst
 .venv/bin/python -m app.main
 ```
 
+![img.png](img.png)
+![img_1.png](img_1.png)
 Then open <http://127.0.0.1:8000/docs> for interactive Swagger UI.
 
 Alternatively, with uvicorn directly (adds `--reload`):
