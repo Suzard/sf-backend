@@ -19,6 +19,19 @@ def test_create_contact(client, payload):
     assert len(body["addresses"]) == 1
     assert body["addresses"][0]["type"] == "Home"
     assert body["created_at"] and body["updated_at"]
+    assert body["photo_url"] is None
+
+
+def test_create_contact_with_photo(client, payload):
+    photo_url = "https://images.example.com/contacts/ada.jpg"
+    response = client.post(BASE, json={**payload, "photo_url": photo_url})
+    assert response.status_code == 201
+    assert response.json()["photo_url"] == photo_url
+
+
+def test_create_rejects_invalid_photo_url(client, payload):
+    response = client.post(BASE, json={**payload, "photo_url": "not-a-url"})
+    assert response.status_code == 422
 
 
 def test_create_requires_valid_email(client, payload):
@@ -105,6 +118,19 @@ def test_patch_updates_only_sent_fields(client, payload):
     assert body["addresses"][0]["type"] == "Home"
 
 
+def test_patch_can_set_and_clear_photo(client, payload):
+    contact_id = client.post(BASE, json=payload).json()["id"]
+    photo_url = "https://images.example.com/contacts/ada.jpg"
+
+    updated = client.patch(f"{BASE}/{contact_id}", json={"photo_url": photo_url})
+    assert updated.status_code == 200
+    assert updated.json()["photo_url"] == photo_url
+
+    cleared = client.patch(f"{BASE}/{contact_id}", json={"photo_url": None})
+    assert cleared.status_code == 200
+    assert cleared.json()["photo_url"] is None
+
+
 def test_patch_addresses_replaces_list(client, payload):
     contact_id = client.post(BASE, json=payload).json()["id"]
     response = client.patch(
@@ -140,7 +166,10 @@ def test_patch_same_email_is_allowed(client, payload):
 
 
 def test_put_replaces_contact(client, payload):
-    contact_id = client.post(BASE, json=payload).json()["id"]
+    contact_id = client.post(
+        BASE,
+        json={**payload, "photo_url": "https://images.example.com/contacts/ada.jpg"},
+    ).json()["id"]
     response = client.put(
         f"{BASE}/{contact_id}",
         json={"first_name": "Grace", "last_name": "Hopper", "email": "grace@example.com"},
@@ -150,6 +179,7 @@ def test_put_replaces_contact(client, payload):
     assert body["full_name"] == "Grace Hopper"
     assert body["company"] is None  # omitted fields are cleared by PUT
     assert body["addresses"] == []
+    assert body["photo_url"] is None
 
 
 def test_put_missing_contact_returns_404(client):

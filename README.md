@@ -109,7 +109,7 @@ also read):
 
 ```
 first_name, last_name, email, phone, company, job_title,
-notes
+photo_url, notes
 ```
 
 Each contact can also have zero or more `addresses`, where each address has:
@@ -119,6 +119,8 @@ type (Home|Work|Other), address, city, state, postal_code, country
 ```
 
 Responses add `id`, `full_name`, `created_at`, and `updated_at` (UTC).
+`photo_url` accepts a public HTTP(S) image URL. When it is `null`, clients should
+continue displaying the contact's initials.
 
 ### List query parameters
 
